@@ -30,6 +30,20 @@ def get_manwhas_url(url):
     return urls
 
 
+def get_manwha_title(url):
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, "html.parser")
+
+    return soup.find('h1').text
+
+
+get_manwha_title("https://chapmanganato.com/manga-pp992650")
+
 for page in get_all_pages(2):
+    start_time = time.perf_counter()
     time.sleep(3)
-    print(get_manwhas_url(page))
+    for manwhaUrl in get_manwhas_url(page):
+        print(get_manwha_title(manwhaUrl))
+    end_time = time.perf_counter()
+    print(f"Temps d'exécution : {end_time - start_time : .2f} seconde(s)")
+
