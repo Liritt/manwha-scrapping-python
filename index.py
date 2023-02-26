@@ -16,6 +16,10 @@ def get_all_pages(number=1):
     return urls
 
 
+def get_manwha_title(soup):
+    return soup.find('h1').text
+
+
 def get_manwhas_url(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
@@ -30,20 +34,38 @@ def get_manwhas_url(url):
     return urls
 
 
-def get_manwha_title(url):
+def get_manwha_status(soup):
+    status = soup.select("tbody tr:nth-child(3) td.table-value")
+
+    try:
+        status = status[0].text
+        if status not in ['Ongoing', 'Completed']:
+            status = "Fail"
+    except IndexError:
+        status = "Fail"
+
+    if status == "Fail":
+        try:
+            status = soup.select("tbody tr:nth-child(2) td.table-value")[0].text
+        except IndexError:
+            status = soup.select("div.manga-info-top > ul > li:nth-child(3)")[0].text
+
+    if status.startswith('Status : '):
+        status = status.replace('Status : ', '')
+
+    return status
+
+
+def get_manwha_data(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
 
-    return soup.find('h1').text
+    return get_manwha_title(soup), get_manwha_status(soup)
 
-
-get_manwha_title("https://chapmanganato.com/manga-pp992650")
 
 for page in get_all_pages(2):
     start_time = time.perf_counter()
-    time.sleep(3)
     for manwhaUrl in get_manwhas_url(page):
-        print(get_manwha_title(manwhaUrl))
+        print(get_manwha_data(manwhaUrl))
     end_time = time.perf_counter()
     print(f"Temps d'exécution : {end_time - start_time : .2f} seconde(s)")
-
