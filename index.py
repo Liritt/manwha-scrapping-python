@@ -3,6 +3,7 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 
 
 def get_all_pages(number=1):
@@ -172,12 +173,39 @@ def get_manwha_alt_names(soup):
     return alt_names
 
 
+def get_manwha_update_dat(soup):
+    date_obj = None
+    dat_update = soup.select_one("div.story-info-right div.story-info-right-extent p:nth-child(1) span.stre-value")
+    if dat_update:
+        dat_update = dat_update.text
+    else:
+        dat_update = soup.select_one("div.manga-info-top ul.manga-info-text li:nth-child(4)").text \
+            .replace("Last updated : ", "")
+
+    dat_update = dat_update.replace("- ", "")
+
+    date_formats = ["%b %d,%Y %I:%M %p", "%b-%d-%Y %I:%M:%S %p", "%b-%d-%Y %I:%M %p", "%b %d,%Y %H:%M %p"]
+
+    for date_format in date_formats:
+        try:
+            date_obj = datetime.strptime(dat_update, date_format)
+            break
+        except ValueError:
+            pass
+
+    if not date_obj:
+        raise ValueError(f"Unrecognized date format: {dat_update}")
+
+    return date_obj - timedelta(hours=7)
+
+
 def get_manwha_data(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
 
     return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(
-        soup), get_manwha_pic(soup), get_manwha_rating(soup), get_manwha_alt_names(soup), url
+        soup), get_manwha_pic(soup), get_manwha_rating(soup), get_manwha_alt_names(soup), get_manwha_update_dat(
+        soup), url
 
 
 for page in get_all_pages(2):
