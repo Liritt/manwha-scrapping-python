@@ -58,18 +58,22 @@ def get_manwha_status(soup):
 
 
 def get_manwha_genres(soup):
-    genres = soup.select("div.manga-info-top > ul > li:nth-child(7)")
+    genres = soup.select_one("div.manga-info-top > ul > li:nth-child(7)")
 
-    try:
-        genres = genres[0].text
-    except IndexError:
-        genres = "Fail"
+    if genres:
+        genres = genres.text
+    else:
+        genres = soup.select_one("tbody > tr:nth-child(4) > td.table-value")
 
-    if genres == "Fail":
-        try:
-            genres = soup.select("tbody > tr:nth-child(4) > td.table-value")[0].text
-        except IndexError:
-            genres = soup.select("tbody > tr:nth-child(3) > td.table-value")[0].text
+        if genres:
+            genres = genres.text
+        else:
+            genres = soup.select_one("tbody > tr:nth-child(3) > td.table-value")
+
+            if genres:
+                genres = genres.text
+            else:
+                genres = "Fail"
 
     if genres.startswith('Genres :'):
         genres = genres.replace('Genres :', '')
@@ -82,6 +86,7 @@ def get_manwha_genres(soup):
         genres = [genre.strip() for genre in genres.split('-') if genre.strip()]
     elif "/" in genres:
         genres = [genre.strip() for genre in genres.split('/') if genre.strip()]
+
     if type(genres) != list:
         genres = genres.split()
 
@@ -89,17 +94,16 @@ def get_manwha_genres(soup):
 
 
 def get_manwha_views(soup):
-    views = soup.select("div.story-info-right div.story-info-right-extent p:nth-child(2) span.stre-value")
+    views = soup.select_one("div.story-info-right div.story-info-right-extent p:nth-child(2) span.stre-value")
 
-    try:
-        views = views[0].text
-    except IndexError:
-        views = "Fail"
+    if views:
+        views = views.text
+    else:
+        views = soup.select_one("div.manga-info-top ul.manga-info-text li:nth-child(6)")
 
-    if views == "Fail":
-        try:
-            views = soup.select("div.manga-info-top ul.manga-info-text li:nth-child(6)")[0].text
-        except IndexError:
+        if views:
+            views = views.text
+        else:
             views = "Fail"
 
     if views.startswith("View : "):
@@ -109,15 +113,16 @@ def get_manwha_views(soup):
 
 
 def get_manwha_description(soup):
-    try:
-        description = soup.select("#panel-story-info-description")[0].text.replace("Description :\n", "")
-    except IndexError:
-        description = "Fail"
+    description = soup.select_one("#panel-story-info-description")
 
-    if description == "Fail":
-        try:
-            description = soup.select("#noidungm")[0].text
-        except IndexError:
+    if description:
+        description = description.text.replace("Description :\n", "")
+    else:
+        description = soup.select_one("#noidungm")
+
+        if description:
+            description = description.text
+        else:
             description = "Fail"
 
     return description.replace('\n', '').replace('\\', '')
