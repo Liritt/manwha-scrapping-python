@@ -133,17 +133,9 @@ def get_manwha_pic(soup):
 
 
 def get_manwha_rating(soup):
-    try:
-        rating = soup.select_one("#rate_row_cmd > em > em:nth-child(2) > em > em:nth-child(1)").text
-    except AttributeError:
-        rating = "Fail"
-
-    if rating == "Fail":
-        try:
-            rating = soup.select_one("#rate_row > input").text
-        except AttributeError:
-            rating = "Fail"
-
+    rating = soup.select_one("#rate_row_cmd").text.split('/')[0].replace('rate :', '').split('\n')[-1]
+    if rating.startswith("Mangakakalot.com"):
+        rating = rating.replace("Mangakakalot.com", "").strip()
     return rating
 
 
