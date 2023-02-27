@@ -150,9 +150,11 @@ def get_manwha_alt_names(soup):
     if alt_names:
         alt_names = alt_names.text
     else:
-        label_value = soup.select_one("table.variations-tableInfo tbody tr:nth-child(1) td.table-label").text
-        if label_value.strip() == "Alternative :":
-            alt_names = soup.select_one("table.variations-tableInfo tbody tr:nth-child(1) td.table-value h2").text
+        label_value = soup.select_one("table.variations-tableInfo tbody tr:nth-child(1) td.table-label")
+        if label_value:
+            label_value = label_value.text
+            if label_value.strip() == "Alternative :":
+                alt_names = soup.select_one("table.variations-tableInfo tbody tr:nth-child(1) td.table-value h2").text
 
     if alt_names:
         if alt_names.startswith("Alternative :"):
@@ -205,7 +207,7 @@ def get_manwha_data(url):
 
     return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(
         soup), get_manwha_pic(soup), get_manwha_rating(soup), get_manwha_alt_names(soup), get_manwha_update_dat(
-        soup), url
+        soup).isoformat(), url
 
 
 for page in get_all_pages(2):
