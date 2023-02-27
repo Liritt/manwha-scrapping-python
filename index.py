@@ -18,7 +18,7 @@ def get_all_pages(number=1):
 
 
 def get_manwha_title(soup):
-    return soup.find('h1').text
+    return soup.find('h1').text.replace("\\", "")
 
 
 def get_manwhas_url(url):
@@ -132,12 +132,27 @@ def get_manwha_pic(soup):
     return pic
 
 
+def get_manwha_rating(soup):
+    try:
+        rating = soup.select_one("#rate_row_cmd > em > em:nth-child(2) > em > em:nth-child(1)").text
+    except AttributeError:
+        rating = "Fail"
+
+    if rating == "Fail":
+        try:
+            rating = soup.select_one("#rate_row > input").text
+        except AttributeError:
+            rating = "Fail"
+
+    return rating
+
+
 def get_manwha_data(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
 
     return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(
-        soup), get_manwha_pic(soup)
+        soup), get_manwha_pic(soup), get_manwha_rating(soup)
 
 
 for page in get_all_pages(2):
