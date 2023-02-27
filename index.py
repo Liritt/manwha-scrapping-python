@@ -88,11 +88,31 @@ def get_manwha_genres(soup):
     return genres
 
 
+def get_manwha_views(soup):
+    views = soup.select("div.story-info-right div.story-info-right-extent p:nth-child(2) span.stre-value")
+
+    try:
+        views = views[0].text
+    except IndexError:
+        views = "Fail"
+
+    if views == "Fail":
+        try:
+            views = soup.select("div.manga-info-top ul.manga-info-text li:nth-child(6)")[0].text
+        except IndexError:
+            views = "Fail"
+
+    if views.startswith("View : "):
+        views = views.replace("View : ", "")
+
+    return views
+
+
 def get_manwha_data(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
 
-    return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup)
+    return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(soup)
 
 
 for page in get_all_pages(2):
