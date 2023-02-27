@@ -123,11 +123,21 @@ def get_manwha_description(soup):
     return description.replace('\n', '').replace('\\', '')
 
 
+def get_manwha_pic(soup):
+    try:
+        pic = soup.find_all("img")[1].get("src")
+    except IndexError:
+        pic = "Fail"
+
+    return pic
+
+
 def get_manwha_data(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
 
-    return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(soup), get_manwha_description(soup)
+    return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(
+        soup), get_manwha_pic(soup)
 
 
 for page in get_all_pages(2):
