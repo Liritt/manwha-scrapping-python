@@ -1,4 +1,5 @@
 import time
+import re
 
 import requests
 from bs4 import BeautifulSoup
@@ -56,11 +57,42 @@ def get_manwha_status(soup):
     return status
 
 
+def get_manwha_genres(soup):
+    genres = soup.select("div.manga-info-top > ul > li:nth-child(7)")
+
+    try:
+        genres = genres[0].text
+    except IndexError:
+        genres = "Fail"
+
+    if genres == "Fail":
+        try:
+            genres = soup.select("tbody > tr:nth-child(4) > td.table-value")[0].text
+        except IndexError:
+            genres = soup.select("tbody > tr:nth-child(3) > td.table-value")[0].text
+
+    if genres.startswith('Genres :'):
+        genres = genres.replace('Genres :', '')
+
+    genres = re.sub(r'\n', '', genres)
+
+    if "," in genres:
+        genres = [genre.strip() for genre in genres.split(',') if genre.strip()]
+    elif "-" in genres:
+        genres = [genre.strip() for genre in genres.split('-') if genre.strip()]
+    elif "/" in genres:
+        genres = [genre.strip() for genre in genres.split('/') if genre.strip()]
+    if type(genres) != list:
+        genres = genres.split()
+
+    return genres
+
+
 def get_manwha_data(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
 
-    return get_manwha_title(soup), get_manwha_status(soup)
+    return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup)
 
 
 for page in get_all_pages(2):
