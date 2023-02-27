@@ -108,11 +108,26 @@ def get_manwha_views(soup):
     return views
 
 
+def get_manwha_description(soup):
+    try:
+        description = soup.select("#panel-story-info-description")[0].text.replace("Description :\n", "")
+    except IndexError:
+        description = "Fail"
+
+    if description == "Fail":
+        try:
+            description = soup.select("#noidungm")[0].text
+        except IndexError:
+            description = "Fail"
+
+    return description.replace('\n', '').replace('\\', '')
+
+
 def get_manwha_data(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
 
-    return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(soup)
+    return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(soup), get_manwha_description(soup)
 
 
 for page in get_all_pages(2):
