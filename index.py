@@ -139,12 +139,40 @@ def get_manwha_rating(soup):
     return rating
 
 
+def get_manwha_alt_names(soup):
+    alt_names = soup.select_one("div.leftCol div.manga-info-top ul.manga-info-text li:nth-child(1) h2")
+    if alt_names:
+        alt_names = alt_names.text
+    else:
+        label_value = soup.select_one("table.variations-tableInfo tbody tr:nth-child(1) td.table-label").text
+        if label_value.strip() == "Alternative :":
+            alt_names = soup.select_one("table.variations-tableInfo tbody tr:nth-child(1) td.table-value h2").text
+
+    if alt_names:
+        if alt_names.startswith("Alternative :"):
+            alt_names = alt_names.replace("Alternative :", "")
+        if ";" in alt_names:
+            alt_names = [alt_name.strip() for alt_name in alt_names.split(';') if alt_name.strip()]
+        elif "," in alt_names:
+            alt_names = [alt_name.strip() for alt_name in alt_names.split(',') if alt_name.strip()]
+        elif "/" in alt_names:
+            alt_names = [alt_name.strip() for alt_name in alt_names.split('/') if alt_name.strip()]
+        else:
+            alt_names = alt_names.split()
+        regex = re.compile(r'^[\u0000-\u00FF]+$')
+        alt_names = [altName.strip() for altName in alt_names if regex.match(altName)]
+    else:
+        alt_names = []
+
+    return alt_names
+
+
 def get_manwha_data(url):
     r = requests.get(url)
     soup = BeautifulSoup(r.content, "html.parser")
 
     return get_manwha_title(soup), get_manwha_status(soup), get_manwha_genres(soup), get_manwha_views(
-        soup), get_manwha_pic(soup), get_manwha_rating(soup)
+        soup), get_manwha_pic(soup), get_manwha_rating(soup), get_manwha_alt_names(soup), url
 
 
 for page in get_all_pages(2):
